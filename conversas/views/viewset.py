@@ -8,7 +8,6 @@ from rest_framework import viewsets
 from ..models import Documento, Conversa, Mensagem
 from ..serializers import DocumentoSerializer, ConversaSerializer, MensagemSerializer
 
-# Configurações
 openai.api_key = os.getenv("OPENAI_API_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -37,18 +36,6 @@ def create_app():
         return jsonify(response)
 
     return app
-
-class DocumentoViewSet(viewsets.ModelViewSet):
-    queryset = Documento.objects.all()
-    serializer_class = DocumentoSerializer
-
-class ConversaViewSet(viewsets.ModelViewSet):
-    queryset = Conversa.objects.all()
-    serializer_class = ConversaSerializer
-
-class MensagemViewSet(viewsets.ModelViewSet):
-    queryset = Mensagem.objects.all()
-    serializer_class = MensagemSerializer
 
 if __name__ == "__main__":
     app = create_app()

@@ -6,15 +6,33 @@ from .views import(
     DocumentoViewSet,
     ConversaViewSet,
     MensagemViewSet,
-
+    PerguntaViewSet,
+    ChatView,
 )
 
 router = DefaultRouter()
 
 
-router.register(r'documentos', DocumentoViewSet)
-router.register(r'conversas', ConversaViewSet)
-router.register(r'mensagens', MensagemViewSet)
+router.register(
+    r'documentos',
+    DocumentoViewSet,
+    basename="documentos"
+)
+router.register(
+    r'conversas',
+    ConversaViewSet,
+    basename="conversas"
+)
+router.register(
+    r'mensagens',
+    MensagemViewSet,
+    basename="mensagens"
+)
+router.register(
+    r'perguntas',
+    PerguntaViewSet,
+    basename="perguntas"
+)
 
 urlpatterns = [
     path(
@@ -26,4 +44,5 @@ urlpatterns = [
         '',
         include(router.urls)
     ),
+    path('chat/', ChatView.as_view(), name='chat'),
 ]
