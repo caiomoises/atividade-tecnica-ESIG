@@ -16,6 +16,7 @@ dataclasses-json==0.6.7
 distro==1.9.0
 dj-database-url==0.5.0
 Django==5.1.7
+django-cors-headers==4.7.0
 djangorestframework==3.15.2
 djangorestframework_simplejwt==5.4.0
 drf-yasg==1.21.8
