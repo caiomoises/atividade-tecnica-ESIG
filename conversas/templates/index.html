@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat com Documentos</title>
+    <style>
+        :root {
+            --primary-color: #10a37f;
+            --primary-hover: #0d8a6a;
+            --background: #ffffff;
+            --background-secondary: #f7f7f8;
+            --text-primary: #343541;
+            --text-secondary: #6e6e80;
+            --message-user: #f7f7f8;
+            --message-bot: #ffffff;
+            --border: #e5e5e6;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #10a37f;
+            --primary-hover: #0d8a6a;
+            --background: #343541;
+            --background-secondary: #444654;
+            --text-primary: #ececf1;
+            --text-secondary: #acacbe;
+            --message-user: #444654;
+            --message-bot: #565869;
+            --border: #565869;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .header {
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--background);
+            position: relative;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            height: 100px;
+            width: auto;
+        }
+
+        .theme-toggle, .new-chat-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            transition: background-color 0.3s;
+        }
+
+        .theme-toggle:hover, .new-chat-button:hover {
+            background-color: var(--background-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--background);
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            line-height: 1.5;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--message-user);
+            border: 1px solid var(--border);
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: var(--message-bot);
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .input-area {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            background-color: var(--background);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        textarea {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            resize: none;
+            font-family: inherit;
+            min-height: 60px;
+            max-height: 200px;
+            background-color: var(--background);
+            color: var(--text-primary);
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.2);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .file-input-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .file-input-label {
+            padding: 0.5rem 1rem;
+            background-color: var(--background-secondary);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        .file-input-label:hover {
+            background-color: var(--border);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .file-name {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-left: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .typing-indicator {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: var(--message-bot);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-secondary);
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite ease-in-out both;
+            transition: background-color 0.3s;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .header-title {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-container">
+            <img src="https://esig.group/wp-content/uploads/2024/07/logo.webp" alt="Logo" class="logo">
+            <h1 class="header-title">ChatBot empresarial</h1>
+        </div>
+        <div class="header-actions">
+            <button class="new-chat-button" id="new-chat-button" title="Nova conversa">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+            </button>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Alternar tema">
+                <svg id="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" fill="currentColor"/>
+                    <path d="M12 2V4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 20V22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M4.92993 4.92999L6.33993 6.33999" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M17.6599 17.66L19.0699 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M2 12H4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M20 12H22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M6.33993 17.66L4.92993 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19.0699 4.92999L17.6599 6.33999" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="chat-container" id="chat-container">
+        <!-- Mensagens serão adicionadas aqui dinamicamente -->
+    </div>
+
+    <div class="input-area">
+        <div class="file-input-container">
+            <label for="file-input" class="file-input-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                </svg>
+                Anexar Documento
+            </label>
+            <input type="file" id="file-input" accept=".pdf,.doc,.docx,.txt">
+            <span id="file-name" class="file-name"></span>
+        </div>
+
+        <div class="input-row">
+            <textarea id="user-input" placeholder="Digite sua mensagem..." rows="1"></textarea>
+            <button id="send-button">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatContainer = document.getElementById('chat-container');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const fileInput = document.getElementById('file-input');
+            const fileNameDisplay = document.getElementById('file-name');
+            const themeToggle = document.getElementById('theme-toggle');
+            const newChatButton = document.getElementById('new-chat-button');
+            const themeIcon = document.getElementById('theme-icon');
+            const body = document.body;
+
+            let currentFile = null;
+            let currentTheme = localStorage.getItem('theme') || 'light';
+            let conversaAtualId = null;
+            let isSending = false;
+
+            // Aplicar tema salvo
+            applyTheme(currentTheme);
+
+            // Alternar tema
+            themeToggle.addEventListener('click', function() {
+                currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+                localStorage.setItem('theme', currentTheme);
+                applyTheme(currentTheme);
+            });
+
+            // Nova conversa
+            newChatButton.addEventListener('click', function() {
+                chatContainer.innerHTML = '';
+                conversaAtualId = null;
+                addMessage('Nova conversa iniciada', 'bot');
+            });
+
+            function applyTheme(theme) {
+                body.setAttribute('data-theme', theme);
+                
+                // Atualizar ícone do tema
+                if (theme === 'dark') {
+                    themeIcon.innerHTML = `
+                        <path d="M12 3C12.5523 3 13 2.55228 13 2C13 1.44772 12.5523 1 12 1C11.4477 1 11 1.44772 11 2C11 2.55228 11.4477 3 12 3Z" fill="currentColor"/>
+                        <path d="M12 19C12.5523 19 13 18.5523 13 18C13 17.4477 12.5523 17 12 17C11.4477 17 11 17.4477 11 18C11 18.5523 11.4477 19 12 19Z" fill="currentColor"/>
+                        <path d="M6.34315 6.34315C6.73367 5.95262 7.36684 5.95262 7.75736 6.34315C8.14789 6.73367 8.14789 7.36684 7.75736 7.75736C7.36684 8.14789 6.73367 8.14789 6.34315 7.75736C5.95262 7.36684 5.95262 6.73367 6.34315 6.34315Z" fill="currentColor"/>
+                        <path d="M16.2426 16.2426C16.6332 15.8521 17.2663 15.8521 17.6569 16.2426C18.0474 16.6332 18.0474 17.2663 17.6569 17.6569C17.2663 18.0474 16.6332 18.0474 16.2426 17.6569C15.8521 17.2663 15.8521 16.6332 16.2426 16.2426Z" fill="currentColor"/>
+                        <path d="M3 12C3 11.4477 2.55228 11 2 11C1.44772 11 1 11.4477 1 12C1 12.5523 1.44772 13 2 13C2.55228 13 3 12.5523 3 12Z" fill="currentColor"/>
+                        <path d="M19 12C19 11.4477 18.5523 11 18 11C17.4477 11 17 11.4477 17 12C17 12.5523 17.4477 13 18 13C18.5523 13 19 12.5523 19 12Z" fill="currentColor"/>
+                        <path d="M7.75736 16.2426C8.14789 16.6332 8.14789 17.2663 7.75736 17.6569C7.36684 18.0474 6.73367 18.0474 6.34315 17.6569C5.95262 17.2663 5.95262 16.6332 6.34315 16.2426C6.73367 15.8521 7.36684 15.8521 7.75736 16.2426Z" fill="currentColor"/>
+                        <path d="M17.6569 6.34315C18.0474 6.73367 18.0474 7.36684 17.6569 7.75736C17.2663 8.14789 16.6332 8.14789 16.2426 7.75736C15.8521 7.36684 15.8521 6.73367 16.2426 6.34315C16.6332 5.95262 17.2663 5.95262 17.6569 6.34315Z" fill="currentColor"/>
+                        <path d="M12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7Z" fill="currentColor"/>
+                    `;
+                } else {
+                    themeIcon.innerHTML = `
+                        <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" fill="currentColor"/>
+                        <path d="M12 2V4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M12 20V22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M4.92993 4.92999L6.33993 6.33999" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M17.6599 17.66L19.0699 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M2 12H4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M20 12H22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M6.33993 17.66L4.92993 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M19.0699 4.92999L17.6599 6.33999" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    `;
+                }
+            }
+
+            // Auto-resize textarea
+            userInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Handle file selection
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    currentFile = this.files[0];
+                    fileNameDisplay.textContent = currentFile.name;
+                } else {
+                    currentFile = null;
+                    fileNameDisplay.textContent = '';
+                }
+            });
+
+            // Send message on Enter (but allow Shift+Enter for new lines)
+            userInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Send message on button click
+            sendButton.addEventListener('click', sendMessage);
+
+            async function sendMessage() {
+                if (isSending) return;
+                isSending = true;
+                
+                const message = userInput.value.trim();
+                const file = currentFile;
+
+                if (!message && !file) {
+                    isSending = false;
+                    return;
+                }
+
+                userInput.value = '';
+                userInput.style.height = 'auto';
+
+                try {
+                    // Add user message to chat
+                    if (message) {
+                        addMessage(message, 'user');
+                    }
+
+                    // Handle file upload if present
+                    if (file) {
+                        addMessage(`Enviando arquivo: ${file.name}...`, 'user');
+                        await uploadFile(file);
+                    }
+
+                    // If there was a text message, send it to the questions API
+                    if (message) {
+                        showTypingIndicator();
+                        await askQuestion(message);
+                        removeTypingIndicator();
+                    }
+                } catch (error) {
+                    console.error('Erro ao enviar mensagem:', error);
+                    addMessage(`❌ Erro: ${error.message}`, 'bot');
+                } finally {
+                    // Clear all inputs
+                    userInput.value = '';
+                    userInput.style.height = 'auto';
+                    currentFile = null;
+                    fileInput.value = '';
+                    fileNameDisplay.textContent = '';
+                    isSending = false;
+                }
+            }
+
+            function addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', `${sender}-message`);
+                messageDiv.textContent = text;
+                chatContainer.appendChild(messageDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            function showTypingIndicator() {
+                const typingDiv = document.createElement('div');
+                typingDiv.classList.add('message', 'bot-message');
+                typingDiv.id = 'typing-indicator';
+                typingDiv.innerHTML = `
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                `;
+                chatContainer.appendChild(typingDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            function removeTypingIndicator() {
+                const typingDiv = document.getElementById('typing-indicator');
+                if (typingDiv) {
+                    typingDiv.remove();
+                }
+            }
+
+            async function uploadFile(file) {
+                const formData = new FormData();
+                formData.append('arquivo', file);
+
+                try {
+                    const response = await fetch('http://127.0.0.1:8000/api/documentos/', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Falha no upload do arquivo');
+                    }
+
+                    const data = await response.json();
+                    addMessage(`Arquivo "${file.name}" foi enviado com sucesso! Agora você pode fazer perguntas sobre ele.`, 'bot');
+                } catch (error) {
+                    console.error('Erro no upload:', error);
+                    addMessage(`Erro ao enviar o arquivo: ${error.message}`, 'bot');
+                }
+            }
+
+            async function askQuestion(question) {
+                try {
+                    const response = await fetch('http://127.0.0.1:8000/api/perguntas/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + localStorage.getItem('token')
+                        },
+                        body: JSON.stringify({
+                            pergunta: question,
+                            conversa_id: conversaAtualId
+                        })
+                    });
+            
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Falha ao obter resposta');
+                    }
+            
+                    // Atualiza o ID da conversa
+                    if (data.conversa_id) {
+                        conversaAtualId = data.conversa_id;
+                    }
+            
+                    addMessage(data.resposta, 'bot');
+                    
+                } catch (error) {
+                    console.error('Erro na pergunta:', error);
+                    addMessage(`❌ Erro: ${error.message}`, 'bot');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
