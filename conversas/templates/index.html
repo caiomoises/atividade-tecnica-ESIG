@@ -19,7 +19,7 @@
         }
 
         [data-theme="dark"] {
-            --primary-color: #10a37f;
+            --primary-color: #45504d;
             --primary-hover: #0d8a6a;
             --background: #343541;
             --background-secondary: #444654;
@@ -535,7 +535,7 @@
                         li.classList.add('active');
                     }
                     
-                    const date = new Date(conversa.criado_en);
+                    const date = new Date(conversa.criado_em);
                     const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
                     
                     li.innerHTML = `
