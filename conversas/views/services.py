@@ -1,7 +1,7 @@
 import os
 import tempfile
 from pypdf import PdfReader
-from docx import Document
+from docx import Document as DocxDocument
 from ..models.vetorRAG import VetorDocumento
 from ..models import Conversa, Mensagem, Documento
 from django.utils import timezone
@@ -31,7 +31,7 @@ def extrair_texto(arquivo):
                 texto += page.extract_text() or "" + "\n"
 
         elif ext == ".docx":
-            doc = Document(temp_file_path)
+            doc = DocxDocument(temp_file_path)
             for para in doc.paragraphs:
                 texto += para.text + "\n"
 
