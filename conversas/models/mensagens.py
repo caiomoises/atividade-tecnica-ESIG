@@ -19,10 +19,22 @@ class Mensagem(models.Model):
         blank=True,
         null=True,
     )
+
+    documento = models.ForeignKey(
+        'Documento',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='mensagens'
+    )
     
     criado_em = models.DateTimeField(
         'Criado em',
         auto_now_add=True
+    )
+
+    erro = models.BooleanField(
+        default=False
     )
 
     def __str__(self):
